@@ -1,5 +1,22 @@
-module.exports = (sequelize, Sequelize) => {
-    const Tutorial = sequelize.define("users", {
+const Sequelize = require('sequelize')
+
+const sequelize = new Sequelize( 
+    'test',
+    'root',
+    '',
+    {
+    host: 'localhost',
+    dialect: 'mysql'
+    }
+)
+sequelize.authenticate().then(() => {
+    console.log('Connection has been established successfully.');
+}).catch((error) => {
+console.error('Unable to connect to the database: ', error);
+});
+
+
+const Tutorial = sequelize.define("Movie",{
     title: {
     type: Sequelize.STRING
     },
@@ -8,7 +25,10 @@ module.exports = (sequelize, Sequelize) => {
     },
     published: {
     type: Sequelize.BOOLEAN
-}
+    }
+})
+sequelize.sync().then(() => {
+    console.log('Book table created successfully!');
+}).catch((error) => {
+console.error('Unable to create table : ', error);
 });
-return Tutorial;
-};
