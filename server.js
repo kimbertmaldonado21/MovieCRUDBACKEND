@@ -1,70 +1,56 @@
-// const express = require('express')
-// const cors = require('cors');
-// const { Z_ASCII } = require('zlib');
+const express = require('express')
+const cors = require('cors');
+const { Z_ASCII } = require('zlib');
+const mysql = require('mysql2');
+const e = require('express');
+const app = express()
 
-// const app = express()
+const PORT = process.env.PORT || 8080;
 
-// const db = require('./models')
-// db.sequelize.sync();
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true}))
 
-// var corsOptions = {
-//     origin: "http://localhost:8081"
-// };
-
-// app.use(cors(corsOptions))
-
-// app.use(express.json())
-
-// app.use(express.urlencoded({ extended: true}))
-
-// app.get("/", (req, res) => {
-//     res.json({ message: "Welcome to this application." });
-// });
-
-// force drop table 
-
-// db.sequelize.sync({ force: true }).then(() => {
-//     console.log("Drop and re-sync db.");
-// });
-
-// const PORT = process.env.PORT || 8080;
-// app.listen(PORT, ()=>{
-//     console.log(`server is running at ${PORT}` )
-// })
-// app.listen(PORT)
-
-
-const Sequelize = require('sequelize')
-
-const sequelize = new Sequelize( 
-    'test',
-    'root',
-    '',
-    {
+var DbConnection = mysql.createConnection({
     host: 'localhost',
-    dialect: 'mysql'
-    }
-)
-sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
-}).catch((error) => {
-console.error('Unable to connect to the database: ', error);
-});
-
-
-const Tutorial = sequelize.define("Movie",{
-    title: {
-    type: Sequelize.STRING
-    },
-    description: {
-    type: Sequelize.STRING
-    },
-    published: {
-    type: Sequelize.BOOLEAN
-    }
+    user: 'root',
+    password : '',
+    database : 'test'
 })
-sequelize.sync().then(() => {
-    console.log('Book table created successfully!');
-}).catch((error) => {
-console.error('Unable to create table : ', error);
+
+app.listen(PORT, ()=>{
+    DbConnection.connect((err) => {
+        if(!err){
+            console.log(`server is running at ${PORT}` )
+        }else{
+            console.log('error',err)
+        }
+})
+})
+// `title`,`description`
+app.get("/api/get", (req, res) => {
+    DbConnection.query("SELECT * FROM `movies`"
+    ,(error, result)=>{
+        if(!error){
+            res.send(result)
+        }else{
+            res.send(error)
+        }
+    })
 });
+
+// add tutorial
+app.post('/api/add',(req, res)=>{
+    const title = req.body.newtitle;
+    const description = req.body.newdescription;
+
+    DbConnection.query("INSERT INTO `movies`(`title`, `description`, `published`)VALUES(?,?,?)"
+    ,[title,description,false]
+    ,(error, result)=>{
+        if(!error){
+            res.send(true)
+        }else{
+            console.log(false)
+        }
+    })
+})
